@@ -24,7 +24,7 @@ app.get('/elasticsearch', function(req, res){
 });
 
 app.get('/arrival', function(req, res){
-  requestFlightInfo('https://yow.ca/en/flight_info/current?flightType=1', function(err, resp) {
+  requestFlightInfo(airportList.YOW_ARRIVAL, function(err, resp) {
     if (err) {
       res.send('ERROR')
     }
@@ -33,7 +33,7 @@ app.get('/arrival', function(req, res){
 });
 
 app.get('/departure', function(req, res){
-  requestFlightInfo('https://yow.ca/en/flight_info/current?flightType=2', function(err, resp) {
+  requestFlightInfo(airportList.YOW_DEPARTURE, function(err, resp) {
     if (err) {
       res.send('ERROR')
     }
@@ -62,6 +62,7 @@ app.get('/read', function(req, res){
 });
 
 function requestFlightInfo(url, callback){
+  console.log('Now fetching from ' + url);
   request.get(url, { json: true }, (err, resp, body) => {
     if (err) {
       console.log(err);
@@ -109,7 +110,6 @@ function indexFlightsStauts(){
   var yow = airportList.yow();
   console.log('Fetching ' + yow.iata + ' flights stauts at ' + Date.now());
   yow.endpoints.forEach(function(item){
-    console.log('Now fetching from ' + item);
     requestFlightInfo(item, function(err, resp){
       if (err) {
         console.log('Fetching from ' + item + ' error: \n' + err);
@@ -118,6 +118,9 @@ function indexFlightsStauts(){
   });
 }
 
-setInterval(indexFlightsStauts, process.env.INDEX_INTERVAL || 1800000);
+if (process.env.INDEX_INTERVAL_SWITCH || true) {
+  setInterval(indexFlightsStauts, process.env.INDEX_INTERVAL || 1800000);
+}
+
 app.set('port', process.env.SERVICE_PORT || 3000);
-app.listen(app.get('port'), () => console.log('Example app listening on port ' + app.get('port') + '!'));
+app.listen(app.get('port'), () => console.log('App listening on port ' + app.get('port') + '!'));
