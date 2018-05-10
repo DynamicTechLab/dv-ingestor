@@ -1,42 +1,44 @@
+require('dotenv').config()
 const express = require('express');
 const request = require('request');
 const fs = require('fs');
 const elasticsearch = require('elasticsearch');
-
-const esClient = require('./esRepo.js');
-
+const esClient = require('./esClient.js');
+const airportList = require('./airportList.js');
 const app = express();
+
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.get('/elastic', function(req, res){
-  var requestDemo = request('http://localhost:9200/', { json: true }, (err, resp, body) => {
-    if (err) { return console.log(err); }
-    console.log(body);
-    res.send(body);
-  });
+app.get('/elasticsearch', function(req, res){
+  esClient.info({
+    requestTimeout: 3000
+  },function(err, resp, status){
+    if (err) {
+      console.error('Elasticsearch is down');
+    } else {
+      console.log(resp);
+      res.send(resp);
+    }
+  })
 });
 
 app.get('/arrival', function(req, res){
-  request.get('https://yow.ca/en/flight_info/current?flightType=1', { json: true }, (err, resp, body) => {
+  requestFlightInfo('https://yow.ca/en/flight_info/current?flightType=1', function(err, resp) {
     if (err) {
-      console.log(err);
-      res.send('ERROR');
+      res.send('ERROR')
     }
-    parseFlightInfo(body);
-    res.send('OK');
-   });
+    res.send('OK')
+  });
 });
 
 app.get('/departure', function(req, res){
-  request.get('https://yow.ca/en/flight_info/current?flightType=2', { json: true }, (err, resp, body) => {
+  requestFlightInfo('https://yow.ca/en/flight_info/current?flightType=2', function(err, resp) {
     if (err) {
-      console.log(err);
-      res.send('ERROR');
+      res.send('ERROR')
     }
-    parseFlightInfo(body);
-    res.send('OK');
-   });
+    res.send('OK')
+  });
 });
 
 app.get('/read', function(req, res){
@@ -59,6 +61,17 @@ app.get('/read', function(req, res){
    });
 });
 
+function requestFlightInfo(url, callback){
+  request.get(url, { json: true }, (err, resp, body) => {
+    if (err) {
+      console.log(err);
+      callback(err, resp);
+    }
+    parseFlightInfo(body);
+    callback(err, resp);
+  });
+}
+
 function parseFlightInfo(body) {
   var flights = body.flights;
   flights.forEach(function(item){
@@ -68,7 +81,7 @@ function parseFlightInfo(body) {
     if (dateFromId >= dateFromSchedule) {
       indexToES(item);
     }
-  })
+  });
 }
 
 function indexToES(flights){
@@ -92,4 +105,19 @@ function formatDate(date) {
     return [year, month, day].join("");
 }
 
-app.listen(3000, () => console.log('Example app listening on port 3000!'));
+function indexFlightsStauts(){
+  var yow = airportList.yow();
+  console.log('Fetching ' + yow.iata + ' flights stauts at ' + Date.now());
+  yow.endpoints.forEach(function(item){
+    console.log('Now fetching from ' + item);
+    requestFlightInfo(item, function(err, resp){
+      if (err) {
+        console.log('Fetching from ' + item + ' error: \n' + err);
+      }
+    });
+  });
+}
+
+setInterval(indexFlightsStauts, process.env.INDEX_INTERVAL || 1800000);
+app.set('port', process.env.SERVICE_PORT || 3000);
+app.listen(app.get('port'), () => console.log('Example app listening on port ' + app.get('port') + '!'));
