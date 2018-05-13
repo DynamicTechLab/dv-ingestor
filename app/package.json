@@ -1,17 +1,24 @@
 {
-  "name": "dashboard",
+  "name": "ingestor",
   "version": "1.0.0",
-  "description": "no description",
-  "main": "index.js",
+  "description": "the package for dv-ingestor",
+  "main": "app.js",
   "scripts": {
+    "debug": "nodemon --inspect=0.0.0.0:9229 app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": "8.11.1"
+  },
   "dependencies": {
     "dotenv": "^5.0.1",
     "elasticsearch": "^14.2.2",
     "express": "^4.16.3",
     "request": "^2.85.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.4"
   }
 }

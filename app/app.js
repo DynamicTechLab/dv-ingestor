@@ -7,8 +7,10 @@ const esClient = require('./esClient.js');
 const airportList = require('./airportList.js');
 const app = express();
 
-
-app.get('/', (req, res) => res.send('Hello World!'));
+// Check if server alive
+app.get('/', (request, response) => {
+  response.send('Hello World!')
+});
 
 app.get('/elasticsearch', function(req, res){
   esClient.info({
@@ -43,7 +45,7 @@ app.get('/departure', function(req, res){
 
 app.get('/read', function(req, res){
   var fileName = req.query.fileName;
-  fs.readFile( __dirname + "/" + fileName + ".json", 'utf8', function (err, rawData) {
+  fs.readFile( __dirname + "/../test/" + fileName + ".json", 'utf8', function (err, rawData) {
     if (err) {
       console.log(err);
       res.send('ERROR');
@@ -106,9 +108,9 @@ function formatDate(date) {
     return [year, month, day].join("");
 }
 
-function indexFlightsStauts(){
+function indexFlightsStatus(){
   var yow = airportList.yow();
-  console.log('Fetching ' + yow.iata + ' flights stauts at ' + Date.now());
+  console.log('Fetching ' + yow.iata + ' flights status at ' + Date.now());
   yow.endpoints.forEach(function(item){
     requestFlightInfo(item, function(err, resp){
       if (err) {
@@ -119,7 +121,7 @@ function indexFlightsStauts(){
 }
 
 if (process.env.INDEX_INTERVAL_SWITCH || true) {
-  setInterval(indexFlightsStauts, process.env.INDEX_INTERVAL || 1800000);
+  setInterval(indexFlightsStatus, process.env.INDEX_INTERVAL || 1800000);
 }
 
 app.set('port', process.env.SERVICE_PORT || 3000);
