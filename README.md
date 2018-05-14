@@ -9,7 +9,14 @@ A microservice that is writing data to ES. We use the docker container to hold t
 > Note:
 > All of our command based on Linux/Mac 
 
-## 2. The Easy Way: Start all service with script
+## 2. IDE
+I personally recommend VS Code. Make sure you've installed several extension to better development experience
+|Plugin|Description|
+|---|---|
+|Eslint|https://github.com/Microsoft/vscode-eslint|
+|Prettier|https://github.com/prettier/prettier-vscode|
+
+## 3. The Easy Way: Start all service with script
 Just run 
 ```shell
 ./helper.sh
@@ -26,7 +33,7 @@ Open another tab and hit localhost:5601, you will access the Kibana
 > The command will remove the current build image so that the script will detect that and build a new image
 > TODO: Move build image to a separate command!
 
-## 3. The Hard Way: Start Ingestor Connect with ElasticSearch Using Docker
+## 4. The Hard Way: Start Ingestor Connect with ElasticSearch Using Docker
 1. Create a customized network
 ```shell
 docker network create dv_ingestor_network --driver=bridge
@@ -49,7 +56,7 @@ docker run --rm --name dv-ingestor -v $(pwd):$(pwd) -p 3000:3000 --network dv_in
 docker run -d --rm --name kibana -p 5601:5601 --network dv_ingestor_network docker.elastic.co/kibana/kibana:6.2.4
 ```
 
-## 4. How to use Kibana
+## 5. How to use Kibana
 In the Navigation Bar, find the Dev Tools, input the following snippet
 ```
 GET /yow/_search
@@ -61,16 +68,16 @@ GET /yow/_search
 ```
 This will display all of the records under index yow
 
-## 5. Debug the app
-### 5.1 Debug through Chrome
+## 6. Debug the app
+### 6.1 Debug through Chrome
 1. Open chrome and go to chrome://inspect/#devices
 2. Click *Open dedicated DevTools for Node* and a new DevTool window will popup. 
 3. Click Source Tab and use Mac shortcut Command+P to search app.js
 4. You can set breakpoint in the file and when you reload the app in browser it should hit the breakpoint.
-### 5.2 Debug through VS Code
+### 6.2 Debug through VS Code
 Haven't figure out yet...
 
-## 6. What is next?...
+## 7. What is next?...
 Some useful command:
 
 curl -X POST "localhost:9200/yow/_delete_by_query" -H 'Content-Type: application/json' -d'
