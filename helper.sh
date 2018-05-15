@@ -41,13 +41,18 @@ build_image(){
 has_image(){
     if [[ -z "$(docker images -q ${IMAGE_NAME})" ]];then
         build_image
+    else 
+        echo "${INFO}${IMAGE_NAME} already exists...${END}"
     fi
 }
 
 # Create the network
 create_network(){
-    if [[ -z "$(docker network inspect ${NETWORK_NAME} 2>/dev/null)" ]];then
+    if [[ $(docker network inspect ${NETWORK_NAME} 2>/dev/null | jq '. | length') == 0 ]];then
+        echo "${INFO}Create network ${NETWORK_NAME}...${END}"
         docker network create ${NETWORK_NAME} --driver=bridge
+    else 
+        echo "${INFO}${NETWORK_NAME} already exists...${END}"
     fi
 }
 
@@ -73,9 +78,9 @@ start_kibana(){
 start_app(){
     if [[ -z "$(docker ps -aqf "name=${REPO_NAME}")" ]]; then
         echo "${INFO}Start ${REPO_NAME}..." &&\
-        docker run --rm -it --name ${REPO_NAME} -v $(pwd):$(pwd) -p 3000:3000 --network ${NETWORK_NAME} ${IMAGE_NAME}
+        docker run --rm -it --name ${REPO_NAME} -v $(pwd):$(pwd) -p 3000:3000 -p 9229:9229 --network ${NETWORK_NAME} ${IMAGE_NAME}
     else 
-        echo "${INFO}Kibana is already up...${END}"
+        echo "${INFO}${REPO_NAME} is already up...${END}"
     fi
 }
 
@@ -91,6 +96,17 @@ start_all(){
         
     }
 
+}
+
+# Run the container in command mode
+run_cli(){
+    if [[ -n "$(docker ps -aqf "name=${REPO_NAME}")" ]]; then
+        echo "${INFO}exec with current up container ${REPO_NAME}..." &&\
+        docker exec -it ${REPO_NAME} ash
+    else 
+        echo "${INFO}create a empheral container to access cli...${END}"
+        docker run --rm -it --name ${REPO_NAME} -v $(pwd):$(pwd) -p 3000:3000 --network ${NETWORK_NAME} ${IMAGE_NAME} ash
+    fi
 }
 
 
@@ -125,6 +141,7 @@ echo "${INFO}Select one action:"
 actions=(
     "Start ${REPO_NAME} with ES and Kibana"
     "Stop all services"
+    "Run npm command through Docker"
     "Quit"
 )
 
@@ -141,6 +158,9 @@ do
             remove_all
             ;;
         "${actions[2]}")
+            run_cli
+            ;;
+        "${actions[3]}")
             break
             ;;
         *) echo "${ERROR} invalid action${END}";;

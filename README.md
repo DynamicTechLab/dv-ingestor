@@ -18,6 +18,14 @@ Then Open your browser and hit localhost:3000, you should be able to see the hel
 
 Open another tab and hit localhost:5601, you will access the Kibana
 
+> Important!
+> Whenever you modify the Dockerfile, you have to rebuild the image, to trigger that through script, you need to use the command:
+> ```shell
+> docker rmi dv-ingestor
+> ```
+> The command will remove the current build image so that the script will detect that and build a new image
+> TODO: Move build image to a separate command!
+
 ## 3. The Hard Way: Start Ingestor Connect with ElasticSearch Using Docker
 1. Create a customized network
 ```shell
@@ -41,7 +49,28 @@ docker run --rm --name dv-ingestor -v $(pwd):$(pwd) -p 3000:3000 --network dv_in
 docker run -d --rm --name kibana -p 5601:5601 --network dv_ingestor_network docker.elastic.co/kibana/kibana:6.2.4
 ```
 
-## 4. What is next?...
+## 4. How to use Kibana
+In the Navigation Bar, find the Dev Tools, input the following snippet
+```
+GET /yow/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+```
+This will display all of the records under index yow
+
+## 5. Debug the app
+### 5.1 Debug through Chrome
+1. Open chrome and go to chrome://inspect/#devices
+2. Click *Open dedicated DevTools for Node* and a new DevTool window will popup. 
+3. Click Source Tab and use Mac shortcut Command+P to search app.js
+4. You can set breakpoint in the file and when you reload the app in browser it should hit the breakpoint.
+### 5.2 Debug through VS Code
+Haven't figure out yet...
+
+## 6. What is next?...
 Some useful command:
 
 curl -X POST "localhost:9200/yow/_delete_by_query" -H 'Content-Type: application/json' -d'

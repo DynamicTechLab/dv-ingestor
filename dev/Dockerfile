@@ -10,5 +10,6 @@ ARG DEV_HOME
 WORKDIR $DEV_HOME
 
 # run npm install at CMD level, so that we don't need to build new images again and again
-CMD npm install --quiet &&\
-    node index.js
+CMD cd app && \
+    npm install --quiet &&\
+    npm run debug
