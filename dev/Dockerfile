@@ -6,10 +6,10 @@ LABEL maintainer="pangxiaoxi@gmail.com, cndream@gmail.com"
 LABEL description="dv-ingestor dev docker image"
 
 ARG DEV_HOME
+ENV APP_HOME $DEV_HOME/app
 
-WORKDIR $DEV_HOME
+WORKDIR $APP_HOME
 
 # run npm install at CMD level, so that we don't need to build new images again and again
-CMD cd app && \
-    npm install --quiet &&\
+CMD npm install --quiet &&\
     npm run debug

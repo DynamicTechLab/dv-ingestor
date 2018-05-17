@@ -2,7 +2,10 @@
   "extends": ["airbnb-base", "plugin:node/recommended"],
   "plugins": ["node"],
   "rules": {
-    "node/exports-style": ["error", "module.exports"]
+    "node/exports-style": ["error", "module.exports"],
+    "arrow-parens": ["error", "as-needed"],
+    "no-underscore-dangle": ["error", { "allow": ["_id", "_index"] }],
+    "function-paren-newline": ["error", { "minItems": 3 }]
   },
   "env": { "es6": true },
   "parserOptions": {
