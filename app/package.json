@@ -4,7 +4,7 @@
   "description": "the package for dv-ingestor",
   "main": "app.js",
   "scripts": {
-    "debug": "nodemon --inspect=0.0.0.0:9229 app.js",
+    "debug": "nodemon --inspect=0.0.0.0:9229 start.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -16,6 +16,7 @@
     "dotenv": "^5.0.1",
     "elasticsearch": "^14.2.2",
     "express": "^4.16.3",
+    "fs-extra": "^6.0.1",
     "request": "^2.85.0",
     "request-promise-native": "^1.0.5",
     "winston": "^3.0.0-rc5"

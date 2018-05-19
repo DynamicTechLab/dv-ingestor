@@ -1,7 +1,7 @@
 const express = require('express');
 
-const esClient = require('../es-client.js');
-const logger = require('../logger.js');
+const esClient = require('./esClient.js');
+const logger = require('../../logger.js');
 
 const router = express.Router();
 
@@ -20,4 +20,5 @@ router.get('/', (req, res) => {
       res.status(500).send(err);
     });
 });
+
 module.exports = router;

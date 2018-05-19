@@ -28,7 +28,10 @@ Just run
 ./helper.sh
 ```
 
-Then Open your browser and hit localhost:3000, you should be able to see the hello world!
+Then Open your browser and hit localhost:3000, you should be able to see the server up message. 
+> BTW
+> We use nodemon for hot-deploy, so any change you made for code will immediately reflect in server. So you don't need to 
+> start and stop server, most of the time.
 
 Open another tab and hit localhost:5601, you will access the Kibana
 
