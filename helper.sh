@@ -37,6 +37,7 @@ build_image(){
     docker build -f dev/Dockerfile -t ${REPO_NAME} --build-arg DEV_HOME=$(pwd) .
 }
 
+
 # Remove images
 remove_image(){
     stop_and_rm_container_if_running ${REPO_NAME} &&\
