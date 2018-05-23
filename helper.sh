@@ -37,8 +37,18 @@ build_image(){
     docker build -f dev/Dockerfile -t ${REPO_NAME} --build-arg DEV_HOME=$(pwd) .
 }
 
+
+# Remove images
+remove_image(){
+    stop_and_rm_container_if_running ${REPO_NAME} &&\
+    if [[ -n "$(docker images -q ${IMAGE_NAME})" ]];then
+        echo "\n${INFO}Remove ${IMAGE_NAME} image...${END}" &&\
+        docker rmi ${IMAGE_NAME}
+    fi
+}
+
 # Precheck image
-has_image(){
+build_image_if_not_exist(){
     if [[ -z "$(docker images -q ${IMAGE_NAME})" ]];then
         build_image
     else 
@@ -111,10 +121,11 @@ run_cli(){
 
 
 # Stop and remove single container
-stop_and_rm_container(){
+stop_and_rm_container_if_running(){
     # Filter the specific docker container by using its name and check the output is nonzero
     if [[ -n $(docker ps -aqf "name=$1") ]]; then
-        docker stop $1
+        echo "${INFO}Stop and remove $1...${END}" &&\
+        docker stop $1 &&\
         # Check if the container still availabe and remove it if it is not auto removable
         if [ $(docker inspect $1 2>/dev/null | jq '.[0].HostConfig.AutoRemove') == "false" ]; then
             docker rm $1
@@ -125,12 +136,9 @@ stop_and_rm_container(){
 # Stop and remove all of the containers
 remove_all(){
     echo "\n${INFO}Stop and remove all services...${END}\n"
-    echo "${INFO}Stop and remove Kibana...${END}" &&\
-    stop_and_rm_container kibana
-    echo "${INFO}Stop and remove ElasticSearch...${END}" &&\
-    stop_and_rm_container elasticsearch
-    echo "${INFO}Stop and remove ${REPO_NAME}...${END}" &&\
-    stop_and_rm_container ${REPO_NAME}
+    stop_and_rm_container_if_running kibana
+    stop_and_rm_container_if_running elasticsearch
+    stop_and_rm_container_if_running ${REPO_NAME}
 }
 
 # Main
@@ -139,6 +147,7 @@ install_jq
 echo "${INFO}Select one action:"
 
 actions=(
+    "Build ${REPO_NAME} image"
     "Start ${REPO_NAME} with ES and Kibana"
     "Stop all services"
     "Run npm command through Docker"
@@ -149,18 +158,22 @@ select action in "${actions[@]}"
 do
     case ${action} in
         "${actions[0]}")
+            remove_image && \
+            build_image
+            ;;
+        "${actions[1]}")
             echo "\n${INFO}Start ${REPO_NAME} with ES and Kibana...${END}"
-            has_image && \
+            build_image_if_not_exist && \
             create_network && \
             start_all
             ;;
-        "${actions[1]}")
+        "${actions[2]}")
             remove_all
             ;;
-        "${actions[2]}")
+        "${actions[3]}")
             run_cli
             ;;
-        "${actions[3]}")
+        "${actions[4]}")
             break
             ;;
         *) echo "${ERROR} invalid action${END}";;

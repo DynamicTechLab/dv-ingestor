@@ -2,7 +2,7 @@
 FROM node:10-alpine
 
 LABEL vendor="Dynamic Lab"
-LABEL maintainer="pangxiaoxi@gmail.com, cndream@gmail.com"
+LABEL maintainer="pangxiaoxi@gmail.com, cndream@gmail.com, daiyiyi1991@gmail.com"
 LABEL description="dv-ingestor dev docker image"
 
 ARG DEV_HOME
