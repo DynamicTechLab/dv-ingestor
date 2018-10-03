@@ -1,4 +1,4 @@
-#/bin/bash!
+#!/bin/bash
 
 # Color
 INFO='\033[38;5;29m'    # Dark Green
@@ -27,13 +27,13 @@ EOM
 install_jq(){
     # Check if the jq --version error output is zero length or not, if yes, then the jq is not installed
     if [ -z "$(jq --version 2>/dev/null)" ];then
-        echo "${ERROR}$instruction${END}"
+        echo -e "${ERROR}$instruction${END}"
     fi
 }
 
 # Build the image
 build_image(){
-    echo "\n${INFO}Build ${REPO_NAME} image...${END}"
+    echo -e "\n${INFO}Build ${REPO_NAME} image...${END}"
     docker build -f dev/Dockerfile -t ${REPO_NAME} --build-arg DEV_HOME=$(pwd) .
 }
 
@@ -42,7 +42,7 @@ build_image(){
 remove_image(){
     stop_and_rm_container_if_running ${REPO_NAME} &&\
     if [[ -n "$(docker images -q ${IMAGE_NAME})" ]];then
-        echo "\n${INFO}Remove ${IMAGE_NAME} image...${END}" &&\
+        echo -e "\n${INFO}Remove ${IMAGE_NAME} image...${END}" &&\
         docker rmi ${IMAGE_NAME}
     fi
 }
@@ -52,54 +52,54 @@ build_image_if_not_exist(){
     if [[ -z "$(docker images -q ${IMAGE_NAME})" ]];then
         build_image
     else 
-        echo "${INFO}${IMAGE_NAME} already exists...${END}"
+        echo -e "${INFO}${IMAGE_NAME} already exists...${END}"
     fi
 }
 
 # Create the network
 create_network(){
     if [[ $(docker network inspect ${NETWORK_NAME} 2>/dev/null | jq '. | length') == 0 ]];then
-        echo "${INFO}Create network ${NETWORK_NAME}...${END}"
+        echo -e "${INFO}Create network ${NETWORK_NAME}...${END}"
         docker network create ${NETWORK_NAME} --driver=bridge
     else 
-        echo "${INFO}${NETWORK_NAME} already exists...${END}"
+        echo -e "${INFO}${NETWORK_NAME} already exists...${END}"
     fi
 }
 
 # Start elastic search
 start_es(){
     if [[ -z "$(docker ps -aqf "name=${ES_NAME}")" ]]; then
-        echo "${INFO}Start ElasticSearch...${END}" && \
+        echo -e "${INFO}Start ElasticSearch...${END}" && \
         docker run -d -it --rm --name ${ES_NAME} -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" --network ${NETWORK_NAME} docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
     else 
-        echo "${INFO}ElasticSearch is already up...${END}"
+        echo -e "${INFO}ElasticSearch is already up...${END}"
     fi
 }
 
 start_kibana(){
     if [[ -z "$(docker ps -aqf "name=${KIBANA_NAME}")" ]]; then
-        echo "${INFO}Start Kibana...${END}" && \
+        echo -e "${INFO}Start Kibana...${END}" && \
         docker run -d -it --rm --name ${KIBANA_NAME} -p 5601:5601 --network ${NETWORK_NAME} docker.elastic.co/kibana/kibana:${ES_VERSION} 
     else 
-        echo "${INFO}Kibana is already up...${END}"
+        echo -e "${INFO}Kibana is already up...${END}"
     fi
 }
 
 start_app(){
     if [[ -z "$(docker ps -aqf "name=${REPO_NAME}")" ]]; then
-        echo "${INFO}Start ${REPO_NAME}..." &&\
+        echo -e "${INFO}Start ${REPO_NAME}..." &&\
         docker run --rm -it --name ${REPO_NAME} -v $(pwd):$(pwd) -p 3000:3000 -p 9229:9229 --network ${NETWORK_NAME} ${IMAGE_NAME}
     else 
-        echo "${INFO}${REPO_NAME} is already up...${END}"
+        echo -e "${INFO}${REPO_NAME} is already up...${END}"
     fi
 }
 
 # Start all services
 start_all(){
     { 
-        echo "\n${TIP}TIPS: If you want to trace ES or Kibana log, open a new terminal tab and copy command:${END}" && \
-        echo "${TIP}# docker logs -f ${ES_NAME}${END}" && \
-        echo "${TIP}# docker logs -f ${KIBANA_NAME}${END}" && \
+        echo -e "\n${TIP}TIPS: If you want to trace ES or Kibana log, open a new terminal tab and copy command:${END}" && \
+        echo -e "${TIP}# docker logs -f ${ES_NAME}${END}" && \
+        echo -e "${TIP}# docker logs -f ${KIBANA_NAME}${END}" && \
         start_es && \
         start_kibana && \
         start_app
@@ -111,10 +111,10 @@ start_all(){
 # Run the container in command mode
 run_cli(){
     if [[ -n "$(docker ps -aqf "name=${REPO_NAME}")" ]]; then
-        echo "${INFO}exec with current up container ${REPO_NAME}..." &&\
+        echo -e "${INFO}exec with current up container ${REPO_NAME}..." &&\
         docker exec -it ${REPO_NAME} ash
     else 
-        echo "${INFO}create a empheral container to access cli...${END}"
+        echo -e "${INFO}create a empheral container to access cli...${END}"
         docker run --rm -it --name ${REPO_NAME} -v $(pwd):$(pwd) -p 3000:3000 --network ${NETWORK_NAME} ${IMAGE_NAME} ash
     fi
 }
@@ -124,7 +124,7 @@ run_cli(){
 stop_and_rm_container_if_running(){
     # Filter the specific docker container by using its name and check the output is nonzero
     if [[ -n $(docker ps -aqf "name=$1") ]]; then
-        echo "${INFO}Stop and remove $1...${END}" &&\
+        echo -e "${INFO}Stop and remove $1...${END}" &&\
         docker stop $1 &&\
         # Check if the container still availabe and remove it if it is not auto removable
         if [ $(docker inspect $1 2>/dev/null | jq '.[0].HostConfig.AutoRemove') == "false" ]; then
@@ -135,7 +135,7 @@ stop_and_rm_container_if_running(){
 
 # Stop and remove all of the containers
 remove_all(){
-    echo "\n${INFO}Stop and remove all services...${END}\n"
+    echo -e "\n${INFO}Stop and remove all services...${END}\n"
     stop_and_rm_container_if_running kibana
     stop_and_rm_container_if_running elasticsearch
     stop_and_rm_container_if_running ${REPO_NAME}
@@ -144,7 +144,7 @@ remove_all(){
 # Main
 install_jq
 
-echo "${INFO}Select one action:"
+echo -e "${INFO}Select one action:"
 
 actions=(
     "Build ${REPO_NAME} image"
@@ -162,7 +162,7 @@ do
             build_image
             ;;
         "${actions[1]}")
-            echo "\n${INFO}Start ${REPO_NAME} with ES and Kibana...${END}"
+            echo -e "\n${INFO}Start ${REPO_NAME} with ES and Kibana...${END}"
             build_image_if_not_exist && \
             create_network && \
             start_all
@@ -176,6 +176,6 @@ do
         "${actions[4]}")
             break
             ;;
-        *) echo "${ERROR} invalid action${END}";;
+        *) echo -e "${ERROR} invalid action${END}";;
     esac
 done
